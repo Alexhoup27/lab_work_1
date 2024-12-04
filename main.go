@@ -58,8 +58,9 @@ func over_under_lines(a, b, x_0, y_0, x, y float64) bool {
 	if desc < 0 {
 		return false
 	}
-	y_1 := (-2*a*y_0 + desc) / (2 * a)
-	y_2 := (-2*a*y_0 - desc) / (2 * a)
+	y_1 := (2*a*y_0 + desc) / (2 * a)
+	y_2 := (2*a*y_0 - desc) / (2 * a)
+	fmt.Println(y_1, y_2)
 	if y > math.Min(y_1, y_2) && y < math.Max(y_1, y_2) {
 		return true
 	}
@@ -72,8 +73,8 @@ func over_lines(a, b, x_0, y_0, x, y float64) bool {
 	if desc < 0 {
 		return false
 	}
-	y_1 := (-2*a*y_0 + desc) / (2 * a)
-	y_2 := (-2*a*y_0 - desc) / (2 * a)
+	y_1 := (2*a*y_0 + desc) / (2 * a)
+	y_2 := (2*a*y_0 - desc) / (2 * a)
 	if y > y_1 && y > y_2 {
 		return true
 	}
@@ -83,7 +84,7 @@ func correct_graphics(y0_l, y0_g, b_g, a_g, b_l, a_l float64) bool {
 	if y0_l != y0_g-math.Pow(b_g, 0.5) {
 		return false //проверка на правильное положение точки симметрии линей
 	}
-	if math.Abs(a_g-b_g)*2 >= math.Abs(a_l-b_l) {
+	if math.Abs(a_g-b_g)*2 >= math.Abs(a_l-b_l)*1.9 {
 		return false // проверка на пересечение графиков
 	}
 	return true
@@ -116,7 +117,10 @@ func main() {
 		fmt.Println("Wrong graphics !!!")
 		return
 	}
-
+	if correct_graphics(y0_l, y0_g, b_g, a_g, b_l, a_l) == false {
+		fmt.Println("Wrong graphics !!!")
+		return
+	}
 	fmt.Println("Enter cords:")
 	fmt.Scan(&x, &y)
 	flag_l := on_lines(A_l, B_l, C_l, D_l, E_l, x, y)
@@ -128,18 +132,23 @@ func main() {
 	} else if flag_h {
 		fmt.Println("Paint hyperbola")
 	} else if y < y0_l && x > x0_l {
+		// fmt.Println("1")
 		if over_under_lines(a_l, b_l, x0_l, y0_l, x, y) && under_hyperbola(a_g, b_g, x0_g, y0_g, x, y) {
 			fmt.Println("Paint in white")
 		} else {
 			fmt.Println("Paint in blue")
 		}
 	} else if y > y0_l && x < x0_l {
+		// fmt.Println("2")
+		// fmt.Println(over_under_lines(a_l, b_l, x0_l, y0_l, x, y))
+		// fmt.Println(over_hyperbola(a_g, b_g, x0_g, y0_g, x, y))
 		if over_under_lines(a_l, b_l, x0_l, y0_l, x, y) && over_hyperbola(a_g, b_g, x0_g, y0_g, x, y) {
 			fmt.Println("Paint in white")
 		} else {
 			fmt.Println("Paint in blue")
 		}
 	} else if y > y0_l {
+		// fmt.Println("3")
 		if over_lines(a_l, b_l, x0_l, y0_l, x, y) &&
 			(under_hyperbola(a_g, b_g, x0_g, y0_g, x, y) == false &&
 				over_hyperbola(a_g, b_g, x0_g, y0_g, x, y) == false) {
