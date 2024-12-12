@@ -8,6 +8,24 @@ import (
 var A_l, B_l, C_l, D_l, E_l, A_g, B_g, C_g, D_g, E_g float64
 var x, y float64
 
+// Проверка через дельу
+func это_гипербола(A, B, C, D, E float64) bool {
+	delta := (math.Pow(C, 2) / (4 * A)) + (math.Pow(D, 2) / (4 * B)) - E
+	if delta != 0 && A*C < 0 {
+		return true
+	}
+	return false
+}
+
+func это_линии(A, B, C, D, E float64) bool {
+	delta := (math.Pow(C, 2) / (4 * A)) + (math.Pow(D, 2) / (4 * B)) - E
+	if delta == 0 && A*C < 0 {
+		return true
+	}
+	return false
+}
+
+// Проверка по суперпуперскому методу, которые не работает =(
 func is_lines(a, b, x_0, y_0, E float64) bool {
 	return E == (b*math.Pow(x_0, 2) - a*math.Pow(y_0, 2))
 }
@@ -81,26 +99,29 @@ func over_lines(a, b, x_0, y_0, x, y float64) bool {
 	return false
 }
 func correct_graphics(y0_l, y0_g, b_g, a_g, b_l, a_l float64) bool {
-	if y0_l != y0_g-math.Pow(b_g, 0.5) {
+	if y0_l != y0_g-math.Pow(math.Abs(b_g), 0.5) {
+		fmt.Println("1")
 		return false //проверка на правильное положение точки симметрии линей
 	}
-	if math.Abs(a_g-b_g)*2 >= math.Abs(a_l-b_l)*1.9 {
+	if math.Abs(math.Abs(a_g-b_g)*2-math.Abs(a_l-b_l)*1.9) <= 2 {
+		fmt.Println("2")
 		return false // проверка на пересечение графиков
 	}
 	return true
 }
 func main() {
 	fmt.Println("Enter A, B, C, D, E for intersecting lines:")
-	// n_l, err_l := fmt.Scan(&A_l, &B_l, &C_l, &D_l, &E_l)
-	// fmt.Println(n_l, err_l)
 	fmt.Scan(&A_l, &B_l, &C_l, &D_l, &E_l)
 	b_l := A_l
 	a_l := -B_l
 	x0_l := -C_l / (2 * b_l)
 	y0_l := D_l / (2 * a_l)
-	if is_lines(a_l, b_l, x0_l, y0_l, E_l) == false {
-		fmt.Println("Not lines")
-		return
+	// if is_lines(a_l, b_l, x0_l, y0_l, E_l) == false {
+	// 	fmt.Println("Not lines")
+	// 	return
+	// }
+	if это_линии(A_l, B_l, C_l, D_l, E_l) == false {
+		fmt.Println("Not lines!!!")
 	}
 	fmt.Println("Enter A, B, C, D, E for hyperbola:")
 	fmt.Scan(&A_g, &B_g, &C_g, &D_g, &E_g)
@@ -109,10 +130,14 @@ func main() {
 	x0_g := C_g / (2 * b_g)
 	y0_g := -D_g / (2 * a_g)
 
-	if is_hyperbola(a_g, b_g, x0_g, y0_g, E_g) == false {
-		fmt.Println("Not hyperbola")
-		return
+	// if is_hyperbola(a_g, b_g, x0_g, y0_g, E_g) == false {
+	// 	fmt.Println("Not hyperbola")
+	// 	return
+	// }
+	if это_гипербола(A_g, B_g, C_g, D_g, E_g) == false {
+		fmt.Println("Not hyperbola!!!")
 	}
+
 	if x0_g != x0_l || y0_l >= y0_g {
 		fmt.Println("Wrong graphics !!!")
 		return
@@ -132,23 +157,18 @@ func main() {
 	} else if flag_h {
 		fmt.Println("Paint hyperbola")
 	} else if y < y0_l && x > x0_l {
-		// fmt.Println("1")
 		if over_under_lines(a_l, b_l, x0_l, y0_l, x, y) && under_hyperbola(a_g, b_g, x0_g, y0_g, x, y) {
 			fmt.Println("Paint in white")
 		} else {
 			fmt.Println("Paint in blue")
 		}
 	} else if y > y0_l && x < x0_l {
-		// fmt.Println("2")
-		// fmt.Println(over_under_lines(a_l, b_l, x0_l, y0_l, x, y))
-		// fmt.Println(over_hyperbola(a_g, b_g, x0_g, y0_g, x, y))
 		if over_under_lines(a_l, b_l, x0_l, y0_l, x, y) && over_hyperbola(a_g, b_g, x0_g, y0_g, x, y) {
 			fmt.Println("Paint in white")
 		} else {
 			fmt.Println("Paint in blue")
 		}
 	} else if y > y0_l {
-		// fmt.Println("3")
 		if over_lines(a_l, b_l, x0_l, y0_l, x, y) &&
 			(under_hyperbola(a_g, b_g, x0_g, y0_g, x, y) == false &&
 				over_hyperbola(a_g, b_g, x0_g, y0_g, x, y) == false) {
