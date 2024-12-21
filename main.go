@@ -8,30 +8,39 @@ import (
 var A_l, B_l, C_l, D_l, E_l, A_g, B_g, C_g, D_g, E_g float64
 var x, y float64
 
+func eval_delta(A, B, C, D, E float64) float64 {
+	return (math.Pow(C, 2) / (4 * A)) + (math.Pow(D, 2) / (4 * B)) - E
+}
+
+func is_intersect(y0_g, y0_l, A_g, A_l, B_g, B_l, delta float64) bool {
+	if math.Abs((B_g+B_l)*(B_g*math.Pow(y0_g, 2)+B_l*math.Pow(y0_l, 2)-delta)-
+		math.Pow(B_g*y0_g+B_l*y0_l, 2))/(-((B_g + B_l) * (A_g + A_l))) != 0 {
+		return true
+	}
+	return false
+}
+
 // Проверка через дельу
-func это_гипербола(A, B, C, D, E float64) bool {
-	delta := (math.Pow(C, 2) / (4 * A)) + (math.Pow(D, 2) / (4 * B)) - E
-	if delta != 0 && A*C < 0 {
+func это_гипербола(A, B, C, D, E, a, b float64) bool {
+	if a <= 0 || b <= 0 {
+		return false
+	}
+	delta := eval_delta(A, B, C, D, E)
+	if delta != 0 && A*B < 0 {
 		return true
 	}
 	return false
 }
 
-func это_линии(A, B, C, D, E float64) bool {
-	delta := (math.Pow(C, 2) / (4 * A)) + (math.Pow(D, 2) / (4 * B)) - E
-	if delta == 0 && A*C < 0 {
+func это_линии(A, B, C, D, E, a, b float64) bool {
+	if a <= 0 || b <= 0 {
+		return false
+	}
+	delta := eval_delta(A, B, C, D, E)
+	if delta == 0 && A*B < 0 {
 		return true
 	}
 	return false
-}
-
-// Проверка по суперпуперскому методу, которые не работает =(
-func is_lines(a, b, x_0, y_0, E float64) bool {
-	return E == (b*math.Pow(x_0, 2) - a*math.Pow(y_0, 2))
-}
-
-func is_hyperbola(a, b, x_0, y_0, E float64) bool {
-	return E == (a*math.Pow(y_0, 2) - b*math.Pow(x_0, 2) - a*b)
 }
 
 func on_lines(A, B, C, D, E, x, y float64) bool {
@@ -78,7 +87,6 @@ func over_under_lines(a, b, x_0, y_0, x, y float64) bool {
 	}
 	y_1 := (2*a*y_0 + desc) / (2 * a)
 	y_2 := (2*a*y_0 - desc) / (2 * a)
-	fmt.Println(y_1, y_2)
 	if y > math.Min(y_1, y_2) && y < math.Max(y_1, y_2) {
 		return true
 	}
@@ -100,15 +108,26 @@ func over_lines(a, b, x_0, y_0, x, y float64) bool {
 }
 func correct_graphics(y0_l, y0_g, b_g, a_g, b_l, a_l float64) bool {
 	if y0_l != y0_g-math.Pow(math.Abs(b_g), 0.5) {
-		fmt.Println("1")
 		return false //проверка на правильное положение точки симметрии линей
 	}
 	if math.Abs(math.Abs(a_g-b_g)*2-math.Abs(a_l-b_l)*1.9) <= 2 {
-		fmt.Println("2")
 		return false // проверка на пересечение графиков
 	}
 	return true
 }
+
+func new_correct_graphics(x0_l, y0_l, x0_g, y0_g, a_h, b_h, c_h, d_h, e_h, a_l, b_l float64) bool {
+	if on_hyperbola(a_h, b_h, c_h, d_h, e_h, x0_l, y0_l) == false ||
+		x0_l != x0_g || y0_l >= y0_g { // проверка на положение графиков относительно друг друга
+		return false
+	}
+	delta := eval_delta(a_h, b_h, c_h, d_h, e_h)
+	if is_intersect(y0_g, y0_l, a_h, a_l, b_h, b_l, delta) == false {
+		return false
+	}
+	return true
+}
+
 func main() {
 	fmt.Println("Enter A, B, C, D, E for intersecting lines:")
 	fmt.Scan(&A_l, &B_l, &C_l, &D_l, &E_l)
@@ -116,11 +135,7 @@ func main() {
 	a_l := -B_l
 	x0_l := -C_l / (2 * b_l)
 	y0_l := D_l / (2 * a_l)
-	// if is_lines(a_l, b_l, x0_l, y0_l, E_l) == false {
-	// 	fmt.Println("Not lines")
-	// 	return
-	// }
-	if это_линии(A_l, B_l, C_l, D_l, E_l) == false {
+	if это_линии(A_l, B_l, C_l, D_l, E_l, a_l, b_l) == false {
 		fmt.Println("Not lines!!!")
 	}
 	fmt.Println("Enter A, B, C, D, E for hyperbola:")
@@ -129,12 +144,7 @@ func main() {
 	a_g := B_g
 	x0_g := C_g / (2 * b_g)
 	y0_g := -D_g / (2 * a_g)
-
-	// if is_hyperbola(a_g, b_g, x0_g, y0_g, E_g) == false {
-	// 	fmt.Println("Not hyperbola")
-	// 	return
-	// }
-	if это_гипербола(A_g, B_g, C_g, D_g, E_g) == false {
+	if это_гипербола(A_g, B_g, C_g, D_g, E_g, a_l, b_l) == false {
 		fmt.Println("Not hyperbola!!!")
 	}
 
@@ -142,7 +152,7 @@ func main() {
 		fmt.Println("Wrong graphics !!!")
 		return
 	}
-	if correct_graphics(y0_l, y0_g, b_g, a_g, b_l, a_l) == false {
+	if new_correct_graphics(x0_l, y0_l, x0_g, y0_g, A_g, B_g, C_g, D_g, E_g, A_l, B_l) == false {
 		fmt.Println("Wrong graphics !!!")
 		return
 	}
