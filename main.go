@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 )
 
 var A_l, B_l, C_l, D_l, E_l, A_g, B_g, C_g, D_g, E_g float64
@@ -22,7 +23,7 @@ func is_intersect(y0_g, y0_l, A_g, A_l, B_g, B_l, delta float64) bool {
 
 // Проверка через дельу
 func это_гипербола(A, B, C, D, E, a, b float64) bool {
-	if a <= 0 || b <= 0 {
+	if a <= 0 && b <= 0 {
 		return false
 	}
 	delta := eval_delta(A, B, C, D, E)
@@ -33,7 +34,7 @@ func это_гипербола(A, B, C, D, E, a, b float64) bool {
 }
 
 func это_линии(A, B, C, D, E, a, b float64) bool {
-	if a <= 0 || b <= 0 {
+	if a <= 0 && b <= 0 {
 		return false
 	}
 	delta := eval_delta(A, B, C, D, E)
@@ -132,29 +133,31 @@ func main() {
 	fmt.Println("Enter A, B, C, D, E for intersecting lines:")
 	fmt.Scan(&A_l, &B_l, &C_l, &D_l, &E_l)
 	b_l := A_l
-	a_l := -B_l
+	a_l := B_l
 	x0_l := -C_l / (2 * b_l)
 	y0_l := D_l / (2 * a_l)
 	if это_линии(A_l, B_l, C_l, D_l, E_l, a_l, b_l) == false {
 		fmt.Println("Not lines!!!")
+		os.Exit(0)
 	}
 	fmt.Println("Enter A, B, C, D, E for hyperbola:")
 	fmt.Scan(&A_g, &B_g, &C_g, &D_g, &E_g)
-	b_g := -A_g
+	b_g := A_g
 	a_g := B_g
 	x0_g := C_g / (2 * b_g)
 	y0_g := -D_g / (2 * a_g)
-	if это_гипербола(A_g, B_g, C_g, D_g, E_g, a_l, b_l) == false {
+	if это_гипербола(A_g, B_g, C_g, D_g, E_g, a_g, b_g) == false {
 		fmt.Println("Not hyperbola!!!")
+		os.Exit(0)
 	}
 
 	if x0_g != x0_l || y0_l >= y0_g {
 		fmt.Println("Wrong graphics !!!")
-		return
+		os.Exit(0)
 	}
 	if new_correct_graphics(x0_l, y0_l, x0_g, y0_g, A_g, B_g, C_g, D_g, E_g, A_l, B_l) == false {
 		fmt.Println("Wrong graphics !!!")
-		return
+		os.Exit(0)
 	}
 	fmt.Println("Enter cords:")
 	fmt.Scan(&x, &y)
